@@ -1,1 +1,330 @@
-{}
+{
+  "category": "spacecraft_general",
+  "description": "General spacecraft-wide fault knowledge base covering attitude control, onboard computing, and cascading multi-subsystem anomalies not specific to battery/comms/thermal.",
+  "faults": [
+    {
+      "id": "general_001",
+      "name": "Reaction Wheel Failure / Increased Friction",
+      "telemetry_signature": "Gradual increase in wheel motor current for a given commanded rate (contextual anomaly), sometimes followed by a sudden point anomaly where the wheel stops responding entirely despite full motor voltage.",
+      "likely_causes": [
+        "Bearing degradation from loss of lubrication",
+        "Increased mechanical friction in the wheel assembly over mission lifetime",
+        "Wheel driver electronics fault (e.g. improper H-bridge switching bypassing a motor winding)"
+      ],
+      "recommended_actions": [
+        "Monitor wheel friction/current trend to catch degradation before hard failure",
+        "Switch to a redundant reaction wheel or fall back to a reduced-wheel control mode if available",
+        "If only one axis is affected, consider gyroless/reduced-actuator attitude determination modes"
+      ],
+      "real_world_example": {
+        "mission": "Kepler",
+        "summary": "In July 2012, Kepler's reaction wheel assembly 2 (RWA2) stopped spinning entirely. The mission continued on 3 wheels, but RWA4 later developed increased friction and permanently failed, suspending science data collection until a revised control mode was developed.",
+        "source": "Reaction Wheel Performance Characterization, LASP/AIAA",
+        "source_url": "https://arc.aiaa.org/doi/pdf/10.2514/6.2018-2563"
+      }
+    },
+    {
+      "id": "general_002",
+      "name": "Attitude Control Fault / Tumble",
+      "telemetry_signature": "Rapid, large-magnitude deviation across multiple attitude-related channels simultaneously (angular rate, pointing error) - typically a sharp point anomaly at onset, frequently the root cause behind subsequent power/thermal/comms anomalies.",
+      "likely_causes": [
+        "Gyro discrepancy leading to an incorrect fault diagnosis and switch to a faulty backup gyro",
+        "Vehicle attitude rates exceeding what onboard reaction wheels can control",
+        "Propulsion system valve issue during a trajectory correction maneuver"
+      ],
+      "recommended_actions": [
+        "Cross-check independent attitude sensors (gyros, star trackers, sun sensors) before committing to a diagnosis",
+        "Trigger safe mode to stop the tumble using thrusters or reduced-actuator control",
+        "Treat any subsequent power, thermal, or comms anomaly as potentially downstream of this root cause"
+      ],
+      "real_world_example": {
+        "mission": "SOHO",
+        "summary": "A gyro discrepancy led operators to misdiagnose and disable the wrong gyro; the spacecraft began wobbling, reached 7 RPM spin, and contact was lost within 5 minutes. Recovery required activating the transmitter and changing the battery charging strategy over several days.",
+        "source": "AEROSPACE REPORT NO. TOR-2009(8591)-14, Effective Fault Management Guidelines",
+        "source_url": "https://aerospace.org/sites/default/files/maiw/TOR-2009(8591)-14.pdf"
+      }
+    },
+    {
+      "id": "general_003",
+      "name": "Flight Computer Reset / Software Fault",
+      "telemetry_signature": "Sudden gap or discontinuity across most/all telemetry channels simultaneously, followed by a step-change back to nominal-looking values after reboot - a distinctive whole-system point anomaly.",
+      "likely_causes": [
+        "Unexpected flight computer reset from a software exception or watchdog timeout",
+        "Single-event upset (radiation-induced bit flip) corrupting a critical memory location",
+        "RAM error in a subsystem such as a star tracker"
+      ],
+      "recommended_actions": [
+        "Confirm successful reboot and re-verify subsystem health checklist before resuming normal operations",
+        "Review onboard event logs / watchdog records to identify the triggering condition",
+        "If radiation-related, note the event for space-weather correlation (was a solar event active at the time?)"
+      ],
+      "real_world_example": {
+        "mission": "TESS (2022), Orion/Artemis I (2022)",
+        "summary": "TESS entered safe mode after an unexpected flight computer reset (10-13 Oct 2022) and recovered. Around the same period, Orion experienced a RAM error in its star tracker system during Artemis I.",
+        "source": "Spacecraft Anomalies and Failures Workshop 2023, NASA",
+        "source_url": "https://ntrs.nasa.gov/api/citations/20230003611/downloads/Minow%20SCAF%202023%20Intro%20-%20final_2.pdf"
+      }
+    },
+    {
+      "id": "general_004",
+      "name": "Unrecovered Loss of Contact (Unknown Root Cause)",
+      "telemetry_signature": "Total telemetry dropout with no subsequent recovery - distinguishing feature is the absence of any partial-signal or degraded-but-present pattern seen in a typical LOS event.",
+      "likely_causes": [
+        "Unknown / unconfirmed - may be any combination of power, attitude, thermal, or comms failure without sufficient final telemetry to diagnose",
+        "Catastrophic single-point failure in a non-redundant critical system",
+        "Complete loss of power preventing any fault-protection response"
+      ],
+      "recommended_actions": [
+        "Review the last received telemetry across ALL subsystems (not just the channel that triggered the anomaly) for any leading indicator",
+        "Check space-weather logs for a coincident solar event",
+        "Document as an unresolved anomaly; avoid overfitting a root-cause explanation to limited final data"
+      ],
+      "real_world_example": {
+        "mission": "ICON",
+        "summary": "NASA's ICON mission lost contact on 25 Nov 2022 and had not been recovered as of the reporting workshop in Feb 2023, with the cause listed as unknown - illustrating that not every anomaly resolves to a clean diagnosis.",
+        "source": "Spacecraft Anomalies and Failures Workshop 2023, NASA",
+        "source_url": "https://ntrs.nasa.gov/api/citations/20230003611/downloads/Minow%20SCAF%202023%20Intro%20-%20final_2.pdf"
+      }
+    },
+    {
+      "id": "general_005",
+      "name": "Gyro Drift / Bias Error",
+      "telemetry_signature": "Slow, accumulating divergence between gyro-derived attitude and an independent reference (star tracker/sun sensor) - a contextual anomaly growing over time rather than a sudden jump.",
+      "likely_causes": [
+        "Gyro bias drift with age/temperature",
+        "Radiation-induced sensor degradation",
+        "Insufficient recalibration against independent attitude references"
+      ],
+      "recommended_actions": [
+        "Increase frequency of star-tracker-based attitude recalibration",
+        "Trend bias drift rate to predict when correction will next be needed",
+        "Switch to a redundant gyro if drift exceeds acceptable bounds"
+      ]
+    },
+    {
+      "id": "general_006",
+      "name": "Star Tracker False Lock / Blinding",
+      "telemetry_signature": "Sudden loss of valid star tracker attitude solution correlated with a bright object (Sun, Moon, Earth limb) entering the field of view - a point anomaly with a clear geometric trigger.",
+      "likely_causes": [
+        "Direct or near-field sunlight/moonlight entering the tracker's field of view",
+        "Stray light from a nearby spacecraft structure",
+        "False star pattern match during a bright-body transit"
+      ],
+      "recommended_actions": [
+        "Cross-check against attitude/pointing telemetry to confirm a bright-body transit caused the loss",
+        "Rely on gyro-only attitude propagation until the tracker reacquires after the transit",
+        "Adjust future pointing profiles to avoid known blinding geometries if the event is predictable"
+      ]
+    },
+    {
+      "id": "general_007",
+      "name": "Solar Array Deployment Failure",
+      "telemetry_signature": "Deployment status telemetry never confirms full deployment, or power output stays well below expected post-deployment levels - a point anomaly tied to a specific one-time deployment event.",
+      "likely_causes": [
+        "Mechanical jamming of the deployment mechanism",
+        "Pyrotechnic or motor-driven release device failure",
+        "Thermal binding preventing full panel travel"
+      ],
+      "recommended_actions": [
+        "Re-attempt the deployment command sequence if retry is supported",
+        "Thermally cycle the mechanism (sun exposure change via attitude) to relieve possible binding",
+        "Reassess power budget and mission plan around reduced available power if redeployment fails"
+      ]
+    },
+    {
+      "id": "general_008",
+      "name": "Propulsion Valve Stiction",
+      "telemetry_signature": "Thruster firing produces less than commanded impulse, or valve position telemetry lags the command - a point anomaly tied to specific commanded burns rather than continuous drift.",
+      "likely_causes": [
+        "Mechanical stiction in the valve mechanism",
+        "Contamination in the propellant line affecting valve seating",
+        "Cold temperature increasing mechanical friction in the valve"
+      ],
+      "recommended_actions": [
+        "Cross-check valve temperature against its qualified operating range before the next burn",
+        "Command a valve exercise cycle to attempt to free stiction",
+        "Adjust burn duration/planning to compensate for reduced impulse if stiction persists"
+      ]
+    },
+    {
+      "id": "general_009",
+      "name": "Software Watchdog Timeout Loop",
+      "telemetry_signature": "Repeated flight computer resets occurring at a regular interval - a recurring point anomaly pattern rather than a single isolated reset.",
+      "likely_causes": [
+        "A software task hanging and triggering the watchdog repeatedly after each reset",
+        "Corrupted configuration data causing the same fault to recur after reboot",
+        "A hardware fault intermittently triggering the watchdog condition"
+      ],
+      "recommended_actions": [
+        "Review onboard logs immediately after each reset to identify the hanging task before the next timeout occurs",
+        "Load a known-good configuration/software image if corruption is suspected",
+        "Escalate to a safe/minimal operating mode to break the reset loop if it continues"
+      ]
+    },
+    {
+      "id": "general_010",
+      "name": "Memory Bit-Flip (Single-Event Upset) in Non-Critical Register",
+      "telemetry_signature": "A single telemetry value briefly reads an implausible, physically-impossible value for exactly one sample before returning to normal - a very short, isolated point anomaly.",
+      "likely_causes": [
+        "Cosmic ray or energetic particle strike flipping a memory bit",
+        "Radiation environment intensity increase (e.g. during a solar event)",
+        "Non-radiation-hardened memory location in a non-critical subsystem"
+      ],
+      "recommended_actions": [
+        "Confirm the value returned to normal on the very next sample before treating it as a real physical event",
+        "Check space-weather data for a coincident solar/radiation event",
+        "No corrective action typically needed for a single isolated sample; flag only if the pattern recurs frequently"
+      ]
+    },
+    {
+      "id": "general_011",
+      "name": "Sensor Harness Chafing / Intermittent Connection",
+      "telemetry_signature": "A sensor channel intermittently drops out or reads noise for brief periods, often correlated with spacecraft vibration/thermal-flex events - a recurring point anomaly pattern rather than a continuous fault.",
+      "likely_causes": [
+        "Wiring harness insulation wear (chafing) at a flex point or vibration-prone location",
+        "Connector pin degradation causing an intermittent contact",
+        "Thermal expansion/contraction stressing a marginal connection"
+      ],
+      "recommended_actions": [
+        "Correlate dropout timing with known vibration events (thruster firings, mechanism operation) or thermal transitions",
+        "Cross-check with a redundant sensor if available while the intermittent fault is investigated",
+        "Document the pattern for post-mission root-cause analysis, since in-flight harness repair isn't possible"
+      ]
+    },
+    {
+      "id": "general_012",
+      "name": "Relay Contact Welding",
+      "telemetry_signature": "A commanded relay/switch operation fails to change state - the corresponding status telemetry stays stuck at its prior value despite the command being sent, a clear point anomaly at a specific command event.",
+      "likely_causes": [
+        "Contact welding from an over-current switching event",
+        "Mechanical failure of the relay actuator",
+        "Command not actually reaching the relay due to a wiring fault"
+      ],
+      "recommended_actions": [
+        "Verify the command was actually received (check command-echo telemetry) before assuming a relay hardware fault",
+        "Attempt the command again in case of a one-time transient issue",
+        "Switch to a redundant relay/path if the stuck state is confirmed and persistent"
+      ]
+    },
+    {
+      "id": "general_013",
+      "name": "Power Distribution Unit Overcurrent Trip",
+      "telemetry_signature": "A specific load's current draw spikes sharply just before that load's telemetry goes to zero (breaker/fuse trip) - a sharp point anomaly with a clear before/after signature.",
+      "likely_causes": [
+        "Short circuit or fault developing within the affected load",
+        "Inrush current exceeding the breaker's threshold at power-on",
+        "Breaker/fuse threshold set too conservatively for normal operating current"
+      ],
+      "recommended_actions": [
+        "Do not immediately re-close the breaker without reviewing the current spike magnitude and duration",
+        "Check whether the trip coincided with a power-on event (inrush) versus continuous operation (possible fault)",
+        "Escalate to ground review before re-enabling if a genuine short circuit is suspected"
+      ]
+    },
+    {
+      "id": "general_014",
+      "name": "GPS/Navigation Solution Divergence",
+      "telemetry_signature": "Onboard-computed position/velocity solution slowly diverges from ground-tracked orbital elements - a slow contextual anomaly in a derived navigation value.",
+      "likely_causes": [
+        "GPS receiver clock drift",
+        "Reduced satellite visibility/geometry affecting solution quality",
+        "Onboard orbit propagation model not being refreshed with recent ground tracking data"
+      ],
+      "recommended_actions": [
+        "Cross-check onboard navigation solution against latest ground-tracked orbital elements",
+        "Command an onboard state vector update/refresh if divergence exceeds tolerance",
+        "Investigate GPS receiver health if divergence persists after a refresh"
+      ]
+    },
+    {
+      "id": "general_015",
+      "name": "Payload Instrument Calibration Drift",
+      "telemetry_signature": "Instrument output for a known reference target/calibration source slowly shifts from its expected value - a slow contextual anomaly in a science/payload channel rather than a spacecraft-bus health channel.",
+      "likely_causes": [
+        "Detector aging affecting response characteristics",
+        "Optical/mechanical component degradation within the instrument",
+        "Accumulated radiation dose affecting sensor response"
+      ],
+      "recommended_actions": [
+        "Schedule a calibration observation against a known reference target to quantify the drift",
+        "Apply a calibration correction factor to science data processing if drift is well-characterized",
+        "Flag for instrument team review if drift rate is accelerating"
+      ]
+    },
+    {
+      "id": "general_016",
+      "name": "Magnetorquer Saturation",
+      "telemetry_signature": "Commanded magnetic dipole moment repeatedly hits its maximum limit without achieving the desired attitude/momentum correction - a contextual anomaly visible as sustained command-saturation rather than a hardware failure.",
+      "likely_causes": [
+        "Reaction wheel momentum has built up beyond what magnetorquers can desaturate given current orbital position",
+        "Weak local magnetic field geometry at the current orbital location limiting torque authority",
+        "Higher-than-expected disturbance torque requiring more desaturation capacity than planned"
+      ],
+      "recommended_actions": [
+        "Allow more time/orbits for desaturation rather than treating this as a single-event fault",
+        "Cross-check reaction wheel momentum telemetry to confirm this is a desaturation-capacity issue, not a magnetorquer hardware fault",
+        "Consider adjusting attitude profile to reduce disturbance torque accumulation if saturation is frequent"
+      ]
+    },
+    {
+      "id": "general_017",
+      "name": "Onboard Clock Drift",
+      "telemetry_signature": "A slow, accumulating offset between onboard time and ground reference time - a slow contextual anomaly best seen in time-tagged telemetry correlation, not any single channel.",
+      "likely_causes": [
+        "Oscillator aging affecting the onboard clock's frequency stability",
+        "Temperature-induced clock rate variation",
+        "Missed or delayed periodic time-synchronization uplinks"
+      ],
+      "recommended_actions": [
+        "Command a time-synchronization update to correct the offset",
+        "Trend drift rate to determine appropriate resync frequency going forward",
+        "Review any time-critical commands executed during the drift period for potential timing errors"
+      ]
+    },
+    {
+      "id": "general_018",
+      "name": "Redundant Unit Cross-Strapping Fault",
+      "telemetry_signature": "Switching to a redundant/backup unit does not fully restore expected functionality - a point anomaly discovered specifically during a failover event, not during normal primary-unit operation.",
+      "likely_causes": [
+        "Cross-strap wiring fault affecting the backup path specifically",
+        "Backup unit itself degraded from long-term unpowered dormancy",
+        "Configuration mismatch between primary and backup unit settings"
+      ],
+      "recommended_actions": [
+        "Verify backup unit configuration matches expected settings before further troubleshooting",
+        "Check cross-strap-specific telemetry/status if available, separate from the unit's own health telemetry",
+        "Document as a redundancy-path issue distinct from a simple unit failure, since it affects failover reliability specifically"
+      ]
+    },
+    {
+      "id": "general_019",
+      "name": "EMI/EMC Interference Between Subsystems",
+      "telemetry_signature": "A sensitive channel shows noise or brief anomalous readings correlated with another subsystem's operating schedule (e.g. a specific instrument or mechanism powering on) - a recurring contextual anomaly with a clear timing correlation.",
+      "likely_causes": [
+        "Insufficient electromagnetic shielding/isolation between subsystems",
+        "Shared power bus noise coupling between loads",
+        "Unexpected harmonic interference from a specific subsystem's switching frequency"
+      ],
+      "recommended_actions": [
+        "Correlate anomaly timing precisely against other subsystems' operating schedules to identify the interference source",
+        "Adjust operational timing to avoid simultaneous operation of the interfering subsystems where possible",
+        "Escalate to EMC engineering review if interference is structural and can't be avoided operationally"
+      ]
+    },
+    {
+      "id": "general_020",
+      "name": "Command Uplink Buffer Corruption",
+      "telemetry_signature": "A stored command sequence executes incorrectly or partially at its scheduled time, despite having been correctly uplinked and acknowledged earlier - a point anomaly at execution time, not at uplink time.",
+      "likely_causes": [
+        "Memory corruption of the stored command buffer between uplink and execution",
+        "A subsequent command inadvertently overwriting part of the stored sequence",
+        "Radiation-induced bit flip in the command storage location"
+      ],
+      "recommended_actions": [
+        "Compare the executed command sequence against the originally uplinked sequence to characterize the corruption",
+        "Re-uplink the sequence closer to its execution time in the future to reduce the exposure window",
+        "Flag for review if this is a recurring pattern rather than an isolated event"
+      ]
+    }
+  ]
+}

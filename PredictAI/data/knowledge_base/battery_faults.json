@@ -1,1 +1,330 @@
-{}
+{
+  "category": "battery",
+  "description": "Spacecraft power system / battery subsystem fault knowledge base for anomaly explanation and solution retrieval.",
+  "faults": [
+    {
+      "id": "battery_001",
+      "name": "Battery Performance Degradation / State-of-Health Decline",
+      "telemetry_signature": "Gradual, sustained drift in charge/discharge voltage, current, or temperature over many cycles rather than a sudden spike. Often shows as a slow contextual anomaly (values stay within physical limits but deviate from the learned normal trend).",
+      "likely_causes": [
+        "Normal capacity fade from repeated charge/discharge cycling over mission lifetime",
+        "Corrosion of the positive electrode causing diffusion-limiting current and electrolyte dry-out",
+        "Cumulative radiation and thermal cycling stress in the space environment"
+      ],
+      "recommended_actions": [
+        "Trend state-of-health indicators over time rather than reacting to a single reading",
+        "Adjust charge/discharge limits or duty cycle to slow further degradation",
+        "Flag for ground team review of battery reconditioning or load-shedding strategy"
+      ],
+      "real_world_example": {
+        "mission": "General finding across satellite fleet study",
+        "summary": "A study of 324 faults across 227 satellites (1994-2014) found power system faults accounted for 26% of all satellite faults, with battery performance degradation and short/open-circuit cell failures among the most common causes.",
+        "source": "Detection of Voltage Anomalies in Spacecraft Storage Batteries Based on a Deep Belief Network",
+        "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6864756/"
+      }
+    },
+    {
+      "id": "battery_002",
+      "name": "Cell Short-Circuit or Open-Circuit Failure",
+      "telemetry_signature": "Sudden, sharp step-change (point anomaly) in cell voltage or pack voltage, often accompanied by an abnormal current reading. Distinct from the slow drift of general degradation.",
+      "likely_causes": [
+        "Single battery cell short-circuit failure",
+        "Single battery cell open-circuit failure",
+        "Charge/discharge circuit fault"
+      ],
+      "recommended_actions": [
+        "Isolate the affected cell/pack if redundant battery packs exist",
+        "Switch charging control to a healthy battery pack via the power distribution unit",
+        "Review under-voltage fault protection thresholds to prevent cascading failures"
+      ],
+      "real_world_example": {
+        "mission": "CloudSat",
+        "summary": "In April 2011 CloudSat suffered a battery anomaly (diffusion-limiting current from positive-electrode corrosion / electrolyte dry-out) that forced emergency mode. Because the battery design did not allow independent cell switching, spare cells could not be used, and it took 8 weeks of recovery operations to regain control.",
+        "source": "CloudSat Battery Anomaly - NASA LLIS",
+        "source_url": "https://llis.nasa.gov/lesson/22502"
+      }
+    },
+    {
+      "id": "battery_003",
+      "name": "Bus Under-Voltage / Power Collapse",
+      "telemetry_signature": "Primary bus voltage drops below minimum operational threshold, potentially to zero, for an extended interval. Frequently a cascading/contextual anomaly following another subsystem fault (e.g. attitude loss causing loss of solar pointing).",
+      "likely_causes": [
+        "Loss of solar array pointing (attitude fault) cutting off charging power",
+        "Too many components powered on simultaneously, exceeding available power budget",
+        "Battery aging combined with unanticipated mission timeline delays"
+      ],
+      "recommended_actions": [
+        "Trigger autonomous load-shedding of non-essential loads",
+        "Command safe mode to preserve power for essential systems (thermal, comms, attitude)",
+        "Investigate whether an attitude or power-distribution fault preceded the voltage collapse"
+      ],
+      "real_world_example": {
+        "mission": "Olympus",
+        "summary": "On 29 May 1991 Olympus suffered an anomaly leaving it tumbling; batteries discharged, the satellite cooled, and propellant froze. The only transmission was an unmodulated carrier, recoverable only when solar arrays intermittently powered the transmitter.",
+        "source": "AEROSPACE REPORT NO. TOR-2009(8591)-14, Effective Fault Management Guidelines",
+        "source_url": "https://aerospace.org/sites/default/files/maiw/TOR-2009(8591)-14.pdf"
+      }
+    },
+    {
+      "id": "battery_004",
+      "name": "Lithium-Ion Thermal Runaway / Impedance Shift",
+      "telemetry_signature": "Rapid temperature rise coincident with voltage instability; a sharp point anomaly in temperature channel usually paired with an anomaly in the corresponding voltage/current channel.",
+      "likely_causes": [
+        "Solid electrolyte interphase (SEI) degradation under radiation and thermal stress",
+        "Capacity fade combined with impedance shift from repeated cycling in the space environment",
+        "Charging outside safe temperature limits"
+      ],
+      "recommended_actions": [
+        "Immediately reduce or suspend charging on the affected pack via the battery charge regulator",
+        "Use thermal control (heaters or reduced load) to bring the pack back within safe temperature limits",
+        "Escalate to ground team for redundant pack switch-over if thermal trend does not stabilize"
+      ],
+      "real_world_example": {
+        "mission": "General Li-ion battery research (Artemis/Europa-class missions)",
+        "summary": "Lithium-ion batteries used on modern spacecraft remain vulnerable to SEI degradation, capacity fade, thermal runaway, and impedance shifts under space radiation and thermal stress, motivating ML-based monitoring beyond traditional threshold alarms.",
+        "source": "Spacecraft Anomaly Detection: ML-Based Detection of Li-Ion Battery Degradation in Space Conditions",
+        "source_url": "https://zenodo.org/records/17107814"
+      }
+    },
+    {
+      "id": "battery_005",
+      "name": "Cell Voltage Imbalance",
+      "telemetry_signature": "Divergence between individual cell voltages within a pack while total pack voltage stays near-normal - a contextual anomaly visible only when per-cell channels are compared, not in the aggregate bus voltage.",
+      "likely_causes": [
+        "Uneven aging/capacity fade across cells",
+        "Faulty cell-balancing circuit",
+        "One cell developing higher internal resistance than its neighbors"
+      ],
+      "recommended_actions": [
+        "Activate active/passive cell balancing if hardware supports it",
+        "Reduce depth-of-discharge to slow further divergence",
+        "Flag pack for ground review if imbalance keeps widening"
+      ]
+    },
+    {
+      "id": "battery_006",
+      "name": "Overcharge Condition",
+      "telemetry_signature": "Charge current remains high after voltage has reached the nominal charge-termination point - a contextual anomaly in the current channel relative to the voltage channel.",
+      "likely_causes": [
+        "Charge regulator failing to terminate charging on schedule",
+        "Incorrect charge-termination voltage setpoint",
+        "Temperature sensor feeding bad data to the charge controller"
+      ],
+      "recommended_actions": [
+        "Command manual charge termination via the battery charge regulator",
+        "Cross-check temperature sensor reading feeding the charge control loop",
+        "Review charge-termination setpoints for drift"
+      ]
+    },
+    {
+      "id": "battery_007",
+      "name": "Deep Discharge / Over-Discharge",
+      "telemetry_signature": "Pack voltage drops well below the safe minimum operating threshold - typically a sharp point anomaly following an unplanned high-load event or eclipse longer than expected.",
+      "likely_causes": [
+        "Unplanned high-power load left active during eclipse",
+        "Longer-than-predicted eclipse duration",
+        "Under-voltage fault protection failing to trigger load shedding in time"
+      ],
+      "recommended_actions": [
+        "Trigger emergency load shedding immediately",
+        "Verify eclipse prediction model against actual orbit",
+        "Review under-voltage protection thresholds and response latency"
+      ]
+    },
+    {
+      "id": "battery_008",
+      "name": "Self-Discharge Rate Anomaly",
+      "telemetry_signature": "Pack voltage slowly declines during periods with no commanded load - a slow contextual anomaly only visible over many orbits/days of trend data.",
+      "likely_causes": [
+        "Internal micro-short developing within a cell",
+        "Electrolyte degradation increasing internal leakage current",
+        "Parasitic load left unintentionally powered"
+      ],
+      "recommended_actions": [
+        "Audit all bus loads for an unintended parasitic draw",
+        "Trend self-discharge rate over multiple orbits to confirm it's cell-internal, not load-related",
+        "Flag for possible internal micro-short if no external load explains it"
+      ]
+    },
+    {
+      "id": "battery_009",
+      "name": "Battery Charge Regulator (BCR) Fault",
+      "telemetry_signature": "Charge current becomes erratic or oscillatory rather than following the expected smooth taper - a contextual anomaly with unusual noise/ripple pattern in the current channel.",
+      "likely_causes": [
+        "BCR control loop instability",
+        "Component degradation within the regulator circuit",
+        "Firmware fault in regulator control logic"
+      ],
+      "recommended_actions": [
+        "Switch to a redundant BCR channel if available",
+        "Power-cycle the regulator to clear a possible logic fault",
+        "Escalate to ground team if oscillation persists after power-cycle"
+      ]
+    },
+    {
+      "id": "battery_010",
+      "name": "Battery Temperature Sensor Drift",
+      "telemetry_signature": "Reported battery temperature diverges from the expected relationship with charge/discharge current and known thermal environment - a slow contextual anomaly in the sensor channel alone.",
+      "likely_causes": [
+        "Sensor calibration drift over mission lifetime",
+        "Sensor mounting/thermal-contact degradation",
+        "Radiation-induced sensor reading error"
+      ],
+      "recommended_actions": [
+        "Cross-check against a redundant temperature sensor on the same pack if available",
+        "Apply a calibration offset correction if drift is consistent and well-characterized",
+        "Treat charge-control decisions cautiously until sensor validity is confirmed"
+      ]
+    },
+    {
+      "id": "battery_011",
+      "name": "Capacity Fade Acceleration",
+      "telemetry_signature": "Usable capacity per cycle declines faster than the expected aging curve - a slow contextual anomaly visible only in multi-cycle trend analysis, not single-cycle data.",
+      "likely_causes": [
+        "Operating outside recommended temperature range for extended periods",
+        "Repeated deep-discharge cycling beyond design limits",
+        "Accumulated radiation damage to electrode materials"
+      ],
+      "recommended_actions": [
+        "Reduce depth-of-discharge to slow further fade",
+        "Review recent thermal history for out-of-range operation",
+        "Update remaining-capacity estimates used by mission planning"
+      ]
+    },
+    {
+      "id": "battery_012",
+      "name": "Internal Resistance Increase",
+      "telemetry_signature": "Voltage sag under load becomes larger than expected for a given current draw - a contextual anomaly best seen as a widening voltage-vs-current relationship over time.",
+      "likely_causes": [
+        "Electrode/electrolyte degradation with age",
+        "Corrosion at internal cell connections",
+        "Cumulative thermal cycling stress"
+      ],
+      "recommended_actions": [
+        "Trend voltage-sag-under-load as a health indicator going forward",
+        "Reduce peak current draws where mission profile allows",
+        "Factor into end-of-life capacity planning"
+      ]
+    },
+    {
+      "id": "battery_013",
+      "name": "Cell-to-Cell Connector Corrosion",
+      "telemetry_signature": "Sudden step increase in measured resistance/voltage drop at a specific cell interconnect - a point anomaly localized to one connection point rather than the whole pack.",
+      "likely_causes": [
+        "Moisture or contamination ingress at a connector prior to launch",
+        "Long-duration galvanic corrosion at a dissimilar-metal junction",
+        "Mechanical stress/vibration loosening a connection"
+      ],
+      "recommended_actions": [
+        "Isolate the affected string if pack architecture allows",
+        "Monitor for progressive worsening versus a one-time step change",
+        "Document for post-mission failure analysis if isolation isn't possible"
+      ]
+    },
+    {
+      "id": "battery_014",
+      "name": "Trickle Charge Failure",
+      "telemetry_signature": "Pack voltage slowly drifts down during a nominally fully-charged, idle period when trickle charge should be maintaining it - a slow contextual anomaly during otherwise quiet mission phases.",
+      "likely_causes": [
+        "Trickle charge circuit not engaging as commanded",
+        "Charge controller misjudging pack as already at float voltage",
+        "Wiring fault in the trickle-charge path"
+      ],
+      "recommended_actions": [
+        "Command a manual trickle-charge cycle to confirm the circuit responds",
+        "Verify charge controller's float-voltage logic against actual pack state",
+        "Escalate if manual trickle charge also fails to arrest the drift"
+      ]
+    },
+    {
+      "id": "battery_015",
+      "name": "Depth-of-Discharge Limit Violation",
+      "telemetry_signature": "Discharge depth exceeds the mission's defined safe DoD limit for that orbit/eclipse - a point anomaly flagged against a mission-defined threshold rather than a physical failure limit.",
+      "likely_causes": [
+        "Higher-than-planned power draw during eclipse",
+        "Incorrect DoD limit configured after a mission profile change",
+        "Battery capacity already degraded below what the DoD limit assumed"
+      ],
+      "recommended_actions": [
+        "Review load shedding priorities for the next eclipse cycle",
+        "Reconcile configured DoD limits against current (degraded) battery capacity",
+        "Flag repeated violations as a sign the power budget needs rebalancing"
+      ]
+    },
+    {
+      "id": "battery_016",
+      "name": "Battery Bus Coupling Fault",
+      "telemetry_signature": "Voltage readings at the battery differ unexpectedly from voltage readings at the main bus during the same interval - a contextual anomaly only visible when comparing two related channels.",
+      "likely_causes": [
+        "Degraded or high-resistance connection between battery and bus",
+        "Diode/switch fault in the coupling path",
+        "Wiring harness damage"
+      ],
+      "recommended_actions": [
+        "Compare battery-side and bus-side voltage telemetry directly to localize the fault",
+        "Check redundant coupling path if the architecture has one",
+        "Treat as a wiring/hardware issue, not a battery chemistry issue, before further diagnosis"
+      ]
+    },
+    {
+      "id": "battery_017",
+      "name": "Charge/Discharge Current Ripple",
+      "telemetry_signature": "High-frequency noise/ripple appears in the current channel beyond the normal smooth charge/discharge profile - a contextual anomaly identifiable by increased variance rather than a mean-level shift.",
+      "likely_causes": [
+        "Switching regulator instability",
+        "EMI coupling from another subsystem onto the power bus",
+        "Degraded filter capacitor in the power path"
+      ],
+      "recommended_actions": [
+        "Check for a timing correlation with other subsystems switching on/off (EMI coupling)",
+        "Review regulator switching frequency and loop stability",
+        "Treat as a power-quality issue distinct from battery chemistry"
+      ]
+    },
+    {
+      "id": "battery_018",
+      "name": "Thermal Gradient Across Battery Pack",
+      "telemetry_signature": "Growing temperature difference between cells/modules within the same pack - a slow contextual anomaly visible only when comparing multiple temperature sensors on the same pack.",
+      "likely_causes": [
+        "Uneven heat dissipation due to pack mounting/thermal-path design",
+        "Partial heater failure affecting only part of the pack",
+        "One cell generating more internal heat due to a developing internal fault"
+      ],
+      "recommended_actions": [
+        "Identify which end/module of the pack runs hot and check the local heater status",
+        "Cross-reference with the cell-imbalance check, since a hot cell often also shows abnormal voltage",
+        "Consider load redistribution to reduce localized heating if the cause is usage-pattern related"
+      ]
+    },
+    {
+      "id": "battery_019",
+      "name": "State-of-Charge Estimation Drift",
+      "telemetry_signature": "Onboard SoC estimate diverges from what actual voltage/current history implies - a slow contextual anomaly in a derived/computed telemetry value rather than a raw sensor reading.",
+      "likely_causes": [
+        "Coulomb-counting error accumulating over many cycles without recalibration",
+        "SoC algorithm not accounting for capacity fade",
+        "A missed or misread charge/discharge event corrupting the running estimate"
+      ],
+      "recommended_actions": [
+        "Force a recalibration cycle (full charge/discharge reference point) if mission profile allows",
+        "Cross-check SoC estimate against raw voltage under known load conditions",
+        "Update the SoC algorithm's capacity assumption to reflect current fade level"
+      ]
+    },
+    {
+      "id": "battery_020",
+      "name": "Relay/Switch Contact Degradation in Power Path",
+      "telemetry_signature": "Intermittent voltage dropouts or resistance spikes correlated with relay switching events - point anomalies clustered around specific commanded switching operations rather than continuous drift.",
+      "likely_causes": [
+        "Contact pitting/erosion from repeated switching under load",
+        "Contact welding causing a relay to stick momentarily",
+        "Contamination on contact surfaces"
+      ],
+      "recommended_actions": [
+        "Correlate anomaly timestamps with commanded relay/switch operations to confirm the link",
+        "Switch to a redundant relay/path if available",
+        "Reduce switching frequency on the affected relay where operationally possible"
+      ]
+    }
+  ]
+}

@@ -1,1 +1,331 @@
-{}
+{
+  "category": "communication",
+  "description": "Spacecraft communications subsystem (uplink/downlink/RF) fault knowledge base for anomaly explanation and solution retrieval.",
+  "faults": [
+    {
+      "id": "comms_001",
+      "name": "Loss of Signal (LOS) / Complete Communications Blackout",
+      "telemetry_signature": "Abrupt cessation of downlink telemetry (data channel goes flat, stale, or missing entirely) - typically a sharp point anomaly at onset followed by a sustained contextual gap.",
+      "likely_causes": [
+        "Ground antenna failure or scheduling conflict",
+        "Environmental radio-frequency interference",
+        "Spacecraft attitude pointing error (antenna no longer aimed at Earth)",
+        "Onboard receiver/transmitter hardware failure or accidental power-off via an erroneous command sequence"
+      ],
+      "recommended_actions": [
+        "Initiate automated 'Command Loss Response' - spacecraft attempts to re-establish uplink autonomously",
+        "Check attitude/pointing telemetry (if available) to rule out an antenna pointing error before assuming hardware failure",
+        "Escalate to ground antenna operations to rule out ground-station-side causes"
+      ],
+      "real_world_example": {
+        "mission": "JPL spacecraft fault protection (general)",
+        "summary": "Loss of uplink signal can stem from ground antenna failures, environmental interference, spacecraft hardware failures, erroneous attitude/pointing, RF interference, or an uplinked sequence error (e.g. a radio device accidentally turned off). Standard fault protection responds with an autonomous, endless-loop 'Command Loss Response' until contact is re-established.",
+        "source": "Fault Protection Techniques in JPL Spacecraft, P. Morgan",
+        "source_url": "https://s3vi.ndc.nasa.gov/ssri-kb/static/resources/05-2750.pdf"
+      }
+    },
+    {
+      "id": "comms_002",
+      "name": "Anomalous Downlink / Partial Signal Lock-Up",
+      "telemetry_signature": "Signal present but degraded - off-nominal carrier power (too low or too high) or partial lock (missing subcarrier, symbol, telemetry, or frame lock). Shows as a contextual anomaly rather than a total data gap.",
+      "likely_causes": [
+        "Spacecraft not earth-pointed as expected (incomplete turn, attitude control fault, or fault-protection activation)",
+        "Ground station equipment malfunction or mishandling",
+        "Onboard flight software coding error affecting the downlink chain",
+        "Space environment effects on the RF link"
+      ],
+      "recommended_actions": [
+        "Follow a structured LOS/Anomalous Downlink contingency procedure with troubleshooting flowcharts",
+        "Check for a preceding attitude anomaly that may explain off-pointing",
+        "Differentiate ground-station-side vs spacecraft-side causes before committing to a fix"
+      ],
+      "real_world_example": {
+        "mission": "Cassini",
+        "summary": "Cassini's RF Subsystem used an 'LOS/Anomalous Downlink Contingency Plan' to diagnose off-nominal carrier power and partial lock-up conditions, with five candidate fault categories considered before determining the recovery action.",
+        "source": "Cassini Spacecraft-DSN Communications, IntechOpen",
+        "source_url": "https://www.intechopen.com/chapters/58067"
+      }
+    },
+    {
+      "id": "comms_003",
+      "name": "Data/Memory Corruption in the Telemetry Data Chain",
+      "telemetry_signature": "Downlinked telemetry becomes unreadable or garbled rather than absent - a distinctive contextual anomaly pattern (data present but statistically nonsensical / inconsistent with the encoding scheme).",
+      "likely_causes": [
+        "Memory corruption in the flight data subsystem responsible for packaging telemetry before transmission",
+        "Radiation-induced bit-flip errors (single-event upsets) in onboard memory",
+        "Aging hardware in a long-duration mission"
+      ],
+      "recommended_actions": [
+        "Request a full memory readout ('poke') to identify the extent and location of corruption",
+        "Reroute affected processes to a working memory sector if the system supports remapping",
+        "Cross-check the fraction of corrupted memory against known safe operating thresholds before further action"
+      ],
+      "real_world_example": {
+        "mission": "Voyager 1",
+        "summary": "In 2024 Voyager 1 began sending unreadable data, traced to its Flight Data Subsystem (FDS). A ground-commanded memory readout confirmed about 3% of FDS memory was corrupted, preventing normal operation until engineers relocated the affected code.",
+        "source": "Space.com - Voyager 1 communications breakdown",
+        "source_url": "https://www.space.com/nasa-voyager-1-communications-breakdown-solved"
+      }
+    },
+    {
+      "id": "comms_004",
+      "name": "Antenna Pointing / Mechanical Misalignment",
+      "telemetry_signature": "Gradually weakening signal strength correlated with attitude/pointing telemetry drift - a slow contextual anomaly rather than a sudden failure, often worsening over a tumble or slew event.",
+      "likely_causes": [
+        "Antenna misalignment from a tumbling or off-nominal spacecraft attitude",
+        "Deployable antenna mechanism partial failure",
+        "Power supply disruption to pointing/gimbal mechanisms (e.g. tin-whisker-induced short circuits in older hardware)"
+      ],
+      "recommended_actions": [
+        "Cross-reference with attitude control telemetry to confirm a pointing-related cause",
+        "Command a re-acquisition slew once attitude is stabilized",
+        "If mechanical, assess whether a backup/omnidirectional antenna can restore minimal contact"
+      ],
+      "real_world_example": {
+        "mission": "General / multiple satellites (incl. Galaxy IV)",
+        "summary": "Common technical failures behind communications blackouts include antenna misalignment from tumbling spacecraft and power distribution short-circuits (e.g. tin-whisker growth), both of which can cause total or partial loss of communication capability.",
+        "source": "Communications blackout overview",
+        "source_url": "https://grokipedia.com/page/Communications_blackout"
+      }
+    },
+    {
+      "id": "comms_005",
+      "name": "Transponder Gain Drift",
+      "telemetry_signature": "Downlink signal strength slowly declines while uplink command reception stays nominal - a slow contextual anomaly isolated to one direction of the RF chain.",
+      "likely_causes": [
+        "Amplifier component aging within the transponder",
+        "Thermal-cycling-induced gain shift",
+        "Partial degradation of an RF connector or waveguide"
+      ],
+      "recommended_actions": [
+        "Trend downlink signal strength against thermal telemetry to check for a temperature correlation",
+        "Switch to a redundant transponder chain if available",
+        "Adjust ground station tracking margins if degradation is gradual and bounded"
+      ]
+    },
+    {
+      "id": "comms_006",
+      "name": "Uplink Command Rejection / CRC Failure",
+      "telemetry_signature": "Commands sent to the spacecraft are received but rejected due to checksum/CRC mismatch - shows as a point anomaly in command-acceptance telemetry rather than the RF signal itself.",
+      "likely_causes": [
+        "Bit errors introduced during transmission (weak signal, interference)",
+        "Ground station encoding configuration mismatch",
+        "Onboard receiver hardware fault corrupting received data"
+      ],
+      "recommended_actions": [
+        "Re-send the command and check if the error is transient (weak-signal-related) vs persistent (hardware-related)",
+        "Verify ground station uplink configuration matches spacecraft expectations",
+        "Escalate to receiver hardware review if rejection rate stays elevated"
+      ]
+    },
+    {
+      "id": "comms_007",
+      "name": "Downlink Bit Error Rate Increase",
+      "telemetry_signature": "Frame/packet error rate on the downlink rises without a corresponding drop in raw signal strength - a contextual anomaly distinct from a simple weak-signal condition.",
+      "likely_causes": [
+        "Interference from another RF source",
+        "Onboard modulator/encoder fault",
+        "Ground station demodulator misconfiguration or fault"
+      ],
+      "recommended_actions": [
+        "Check for known interference sources during the affected pass",
+        "Compare error rate across multiple ground stations to isolate spacecraft-side vs ground-side cause",
+        "Review onboard encoder telemetry/status if available"
+      ]
+    },
+    {
+      "id": "comms_008",
+      "name": "Solar Conjunction Blackout",
+      "telemetry_signature": "Complete, predictable loss of usable downlink for an extended period (days to weeks) coincident with the Sun passing between Earth and spacecraft - a known, schedulable contextual anomaly rather than an unexpected fault.",
+      "likely_causes": [
+        "Sun's radio noise overwhelming the communication link during solar conjunction",
+        "Predictable orbital/planetary geometry, not a hardware failure"
+      ],
+      "recommended_actions": [
+        "Confirm the blackout aligns with the predicted conjunction window before treating it as a fault",
+        "Ensure onboard data buffering is sized to hold science/engineering data for the blackout duration",
+        "Resume normal operations monitoring once conjunction geometry clears"
+      ]
+    },
+    {
+      "id": "comms_009",
+      "name": "Doppler Shift Tracking Error",
+      "telemetry_signature": "Signal lock is intermittently lost during high-relative-velocity passes - point anomalies clustered near closest-approach or high-rate orbital phases.",
+      "likely_causes": [
+        "Ground station Doppler compensation model inaccuracy",
+        "Faster-than-expected relative velocity change (e.g. unplanned maneuver)",
+        "Receiver tracking loop bandwidth insufficient for the rate of change"
+      ],
+      "recommended_actions": [
+        "Verify the Doppler prediction model against actual orbital elements",
+        "Widen receiver tracking loop bandwidth if the platform supports it",
+        "Cross-check for a recent maneuver that wasn't reflected in the tracking model"
+      ]
+    },
+    {
+      "id": "comms_010",
+      "name": "RF Power Amplifier Degradation",
+      "telemetry_signature": "Transmitted power output telemetry declines relative to commanded power setting - a slow contextual anomaly in the amplifier's own housekeeping telemetry, separate from received signal strength.",
+      "likely_causes": [
+        "Amplifier component aging (common in traveling-wave-tube or solid-state amplifiers)",
+        "Thermal stress reducing amplifier efficiency over time",
+        "Power supply instability feeding the amplifier"
+      ],
+      "recommended_actions": [
+        "Cross-check amplifier power supply telemetry for a root cause before assuming the amplifier itself has failed",
+        "Switch to a redundant amplifier chain if available",
+        "Adjust link budget expectations if degradation is gradual and within acceptable margins"
+      ]
+    },
+    {
+      "id": "comms_011",
+      "name": "Antenna Deployment Failure",
+      "telemetry_signature": "Deployment status telemetry never confirms full deployment, or signal strength stays far below expected post-deployment levels - a point anomaly tied to a specific one-time deployment event.",
+      "likely_causes": [
+        "Mechanical jamming of the deployment mechanism",
+        "Deployment actuator (motor/pyro) failure",
+        "Thermal binding preventing full mechanism travel"
+      ],
+      "recommended_actions": [
+        "Re-attempt the deployment command sequence if the mechanism supports retry",
+        "Thermally cycle the mechanism (if commandable) to relieve possible thermal binding",
+        "Fall back to a lower-gain/omnidirectional antenna for continued minimal communications if redeployment fails"
+      ]
+    },
+    {
+      "id": "comms_012",
+      "name": "Frequency Synthesizer Drift",
+      "telemetry_signature": "Carrier frequency slowly drifts outside the expected tracking window - a slow contextual anomaly requiring ground station frequency search to reacquire lock.",
+      "likely_causes": [
+        "Oscillator aging",
+        "Temperature-induced frequency drift in the synthesizer",
+        "Radiation-induced component parameter shift"
+      ],
+      "recommended_actions": [
+        "Widen ground station frequency search window to reacquire lock",
+        "Trend frequency drift against thermal telemetry for a temperature correlation",
+        "Update predicted frequency tables used for pass planning"
+      ]
+    },
+    {
+      "id": "comms_013",
+      "name": "Multipath / Ground-Environment Interference",
+      "telemetry_signature": "Signal strength shows rapid, repeating fades correlated with antenna elevation angle rather than a steady decline - a contextual anomaly tied to ground station geometry.",
+      "likely_causes": [
+        "Signal reflection off nearby structures or terrain at the ground station",
+        "Low elevation-angle passes increasing susceptibility to multipath",
+        "Atmospheric scintillation during specific weather conditions"
+      ],
+      "recommended_actions": [
+        "Cross-check against elevation angle and known local RF environment before assuming a spacecraft-side cause",
+        "Prefer higher-elevation passes for critical commanding when the issue recurs",
+        "Coordinate with ground station operations if the pattern is consistent"
+      ]
+    },
+    {
+      "id": "comms_014",
+      "name": "Ground Station Handover Failure",
+      "telemetry_signature": "Brief telemetry gap precisely at a scheduled transition between ground stations (e.g. DSN complex handover) - a short, predictable point anomaly rather than an onboard fault.",
+      "likely_causes": [
+        "Timing mismatch between outgoing and incoming ground station acquisition",
+        "Incorrect handover scheduling parameters",
+        "Brief loss of predicted pointing geometry during transition"
+      ],
+      "recommended_actions": [
+        "Confirm the gap aligns exactly with the scheduled handover window before investigating further",
+        "Review handover timing margins with ground network operations",
+        "Treat as a scheduling/ops issue, not a spacecraft anomaly, unless the gap significantly exceeds the expected handover duration"
+      ]
+    },
+    {
+      "id": "comms_015",
+      "name": "Onboard Telemetry Buffer Overflow",
+      "telemetry_signature": "Data gaps or dropped packets appear despite a nominal RF link - a contextual anomaly best diagnosed via onboard buffer-fill-level telemetry rather than the RF signal itself.",
+      "likely_causes": [
+        "Downlink data rate insufficient for the rate of data generation",
+        "Extended period without a scheduled downlink pass",
+        "A stuck or slow downlink process failing to drain the buffer"
+      ],
+      "recommended_actions": [
+        "Check buffer fill-level trend to distinguish this from an RF link problem",
+        "Schedule an additional or longer downlink pass to relieve the backlog",
+        "Review onboard data generation rate against the current downlink schedule"
+      ]
+    },
+    {
+      "id": "comms_016",
+      "name": "Command Sequence Timing Error",
+      "telemetry_signature": "A commanded action executes at the wrong time or out of expected sequence relative to other commands - a point anomaly visible in command-execution log telemetry.",
+      "likely_causes": [
+        "Onboard clock drift affecting scheduled command execution",
+        "Incorrect time-tag on an uplinked command sequence",
+        "Command queue processing delay"
+      ],
+      "recommended_actions": [
+        "Cross-check onboard clock telemetry against ground reference time",
+        "Review the uplinked command sequence for a time-tagging error before re-sending",
+        "If clock drift is the cause, schedule a clock correction/sync command"
+      ]
+    },
+    {
+      "id": "comms_017",
+      "name": "Encryption/Authentication Handshake Failure",
+      "telemetry_signature": "Uplink commands are received at the RF level but rejected at the protocol/security layer - a point anomaly isolated to the authentication stage, distinct from a CRC/bit-error rejection.",
+      "likely_causes": [
+        "Key/certificate synchronization mismatch between ground and spacecraft",
+        "Onboard security processing fault",
+        "Ground station using an outdated credential set"
+      ],
+      "recommended_actions": [
+        "Verify ground and spacecraft security credentials are in sync before re-attempting",
+        "Check for a recent key-rotation event that may not have propagated correctly",
+        "Escalate to security/crypto subsystem review if resync attempts fail"
+      ]
+    },
+    {
+      "id": "comms_018",
+      "name": "Low-Gain / High-Gain Antenna Switchover Fault",
+      "telemetry_signature": "Signal strength drops sharply at a commanded antenna switch event and does not recover to the expected level for the newly selected antenna - a point anomaly tied to a specific switching command.",
+      "likely_causes": [
+        "RF switch mechanism failing to fully transition",
+        "Incorrect antenna selected due to a commanding error",
+        "Degraded performance on the newly selected antenna itself"
+      ],
+      "recommended_actions": [
+        "Re-issue the antenna selection command and verify switch-status telemetry",
+        "Cross-check against known health of both antennas before assuming a switch mechanism fault",
+        "Revert to the previous antenna if the new one shows degraded performance"
+      ]
+    },
+    {
+      "id": "comms_019",
+      "name": "Co-located RF Source Interference",
+      "telemetry_signature": "Intermittent signal degradation correlated with another onboard subsystem's transmitter/receiver activity - a contextual anomaly with a timing pattern matching another subsystem's duty cycle.",
+      "likely_causes": [
+        "Insufficient RF isolation between co-located transmitters/receivers",
+        "Harmonic interference from another onboard RF source",
+        "Shared power bus noise coupling into the RF chain"
+      ],
+      "recommended_actions": [
+        "Correlate anomaly timing with other onboard RF-emitting subsystems' operating schedules",
+        "Adjust operational timing to avoid simultaneous use where possible",
+        "Escalate to RF/EMC engineering review if interference is structural rather than schedule-avoidable"
+      ]
+    },
+    {
+      "id": "comms_020",
+      "name": "Telemetry Frame Synchronization Loss",
+      "telemetry_signature": "Ground receives RF signal at expected strength but cannot lock onto frame boundaries to decode telemetry - a point anomaly at the framing/protocol layer despite a healthy physical-layer signal.",
+      "likely_causes": [
+        "Onboard frame sync pattern generator fault",
+        "Bit-rate mismatch between transmitted and expected data rate",
+        "Corrupted onboard telemetry formatting configuration"
+      ],
+      "recommended_actions": [
+        "Verify ground receiver is configured for the correct bit rate and frame format",
+        "Check onboard telemetry formatter status/configuration telemetry if available",
+        "Attempt a reconfiguration command to reset the onboard formatter"
+      ]
+    }
+  ]
+}

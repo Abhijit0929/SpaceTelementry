@@ -1,1 +1,328 @@
-{}
+{
+  "category": "thermal",
+  "description": "Spacecraft thermal control subsystem fault knowledge base for anomaly explanation and solution retrieval.",
+  "faults": [
+    {
+      "id": "thermal_001",
+      "name": "Overheating / Loss of Radiator Heat Rejection",
+      "telemetry_signature": "Sustained upward drift in a temperature channel beyond the normal operating band, often a slow contextual anomaly that accelerates rather than a single spike.",
+      "likely_causes": [
+        "Degraded radiator surface (optical/thermal coating breakdown) reducing heat rejection to deep space",
+        "Failure or blockage in a fluid loop or heat pipe carrying heat to the radiator",
+        "Increased internal heat generation from a subsystem operating outside its planned duty cycle"
+      ],
+      "recommended_actions": [
+        "Reduce duty cycle or power on non-essential heat-generating components",
+        "Check fluid loop / heat pipe telemetry (pressure, flow) for a mechanical root cause",
+        "If sustained, command safe mode to protect temperature-sensitive components until root cause is identified"
+      ],
+      "real_world_example": {
+        "mission": "General thermal control subsystem design",
+        "summary": "Multi-layer insulation blankets and radiators protect against overheating while retaining heat to prevent excess cooling; components can cease functioning if temperatures exceed narrow operating ranges, making thermal fault protection essential alongside power and attitude protection.",
+        "source": "Fault Protection Techniques in JPL Spacecraft, P. Morgan",
+        "source_url": "https://s3vi.ndc.nasa.gov/ssri-kb/static/resources/05-2750.pdf"
+      }
+    },
+    {
+      "id": "thermal_002",
+      "name": "Under-Temperature / Heater Failure",
+      "telemetry_signature": "Sustained downward drift in a temperature channel below the safe operating band, typically a slow contextual anomaly following loss of active heating or loss of sun exposure.",
+      "likely_causes": [
+        "Failure of a thermostatically-controlled resistive heater",
+        "Loss of solar exposure due to an attitude/pointing anomaly",
+        "Propellant or fluid freezing following a power/attitude cascading failure"
+      ],
+      "recommended_actions": [
+        "Verify heater command/status telemetry to confirm heater is receiving power and responding",
+        "Cross-check with attitude and power telemetry for a cascading root cause",
+        "Prioritize restoring sun-pointing or heater power before the affected component drops below its qualified low-temperature limit"
+      ],
+      "real_world_example": {
+        "mission": "Olympus",
+        "summary": "After a 1991 tumble anomaly, Olympus's batteries discharged, the satellite cooled down, and its propellant froze - illustrating how a cascading attitude/power failure can rapidly produce a severe under-temperature condition.",
+        "source": "AEROSPACE REPORT NO. TOR-2009(8591)-14, Effective Fault Management Guidelines",
+        "source_url": "https://aerospace.org/sites/default/files/maiw/TOR-2009(8591)-14.pdf"
+      }
+    },
+    {
+      "id": "thermal_003",
+      "name": "Fluid Loop / Heat Pipe Degradation",
+      "telemetry_signature": "Gradual reduction in heat transport efficiency visible as slowly widening temperature differential between two related channels (e.g. source vs. radiator) - a contextual, multi-channel anomaly.",
+      "likely_causes": [
+        "Reliability shortfall in pumped fluid loops or loop heat pipes versus design expectations",
+        "Working fluid depletion or blockage within a variable/axially-grooved heat pipe",
+        "Long-duration wear exceeding conservative design-phase reliability estimates"
+      ],
+      "recommended_actions": [
+        "Track the temperature differential trend across the loop rather than a single sensor in isolation",
+        "Reduce load on the affected loop and redistribute heat-generating tasks if redundancy exists",
+        "Flag for ground engineering review; fluid loop issues are rarely correctable via autonomous action alone"
+      ],
+      "real_world_example": {
+        "mission": "Communications Technology Satellite (1977) and related fluidic TCS studies",
+        "summary": "A review of fluidic thermal control technologies (pumped fluid loops, loop heat pipes, variable/axially-grooved heat pipes) found reliability is frequently overestimated at the design phase, leading to higher in-flight failure rates than intended.",
+        "source": "Spacecraft Fluidic Thermal Control Subsystem Reliability, DTIC",
+        "source_url": "https://apps.dtic.mil/sti/trecms/pdf/AD1195523.pdf"
+      }
+    },
+    {
+      "id": "thermal_004",
+      "name": "Thermal-Induced Safe Mode Entry",
+      "telemetry_signature": "Temperature channel crosses a predefined safety threshold immediately followed by broad changes across many other channels (non-essential systems shutting down) - a sharp point anomaly triggering a system-wide state change.",
+      "likely_causes": [
+        "Autonomous fault protection responding to an out-of-range thermal reading",
+        "Cascading effect from an upstream attitude or power anomaly removing active thermal control",
+        "Cosmic-ray-induced false trigger signal misread as a genuine thermal fault"
+      ],
+      "recommended_actions": [
+        "Confirm whether the temperature reading itself is valid or a false trigger (check for corresponding attitude/power anomalies)",
+        "Follow standard safe-mode recovery procedure: verify essential systems (thermal, comms, attitude) are stable before re-enabling other subsystems",
+        "Review fault-protection trigger thresholds if false triggers recur"
+      ],
+      "real_world_example": {
+        "mission": "General spacecraft safe-mode design",
+        "summary": "Safe mode shuts down all non-essential systems, retaining only thermal management, radio reception, and attitude control, and is triggered automatically when telemetry crosses predefined dangerous thresholds - including, in some cases, false triggers from cosmic rays striking onboard electronics.",
+        "source": "Safe mode in spacecraft - overview",
+        "source_url": "https://en.wikipedia.org/wiki/Safe_mode_in_spacecraft"
+      }
+    },
+    {
+      "id": "thermal_005",
+      "name": "Multi-Layer Insulation (MLI) Degradation",
+      "telemetry_signature": "Slow upward drift in baseline temperature of an externally-facing component with increasing sensitivity to sun angle - a contextual anomaly correlated with orbital sun-exposure geometry.",
+      "likely_causes": [
+        "MLI blanket material degradation from prolonged UV/thermal cycling exposure",
+        "Micrometeoroid or debris damage puncturing insulation",
+        "Outgassing-related property change in the insulation material"
+      ],
+      "recommended_actions": [
+        "Trend temperature against sun-angle telemetry to confirm the exposure correlation",
+        "Adjust attitude/pointing to reduce direct exposure of the affected area if operationally possible",
+        "Factor accelerated degradation into long-term thermal budget planning"
+      ]
+    },
+    {
+      "id": "thermal_006",
+      "name": "Louver Actuator Stiction",
+      "telemetry_signature": "Louver position telemetry stops responding proportionally to commanded thermal control changes - a point anomaly where the mechanism sticks at a fixed position despite changing thermal demand.",
+      "likely_causes": [
+        "Mechanical stiction in the bimetallic or motor-driven actuator",
+        "Lubricant degradation in the actuator mechanism",
+        "Debris or thermal distortion binding the louver blades"
+      ],
+      "recommended_actions": [
+        "Command a full-range exercise cycle to attempt to free the stuck mechanism",
+        "Cross-check whether the louver is stuck open (overheating risk) or stuck closed (undercooling risk) to prioritize response",
+        "Compensate via heater/duty-cycle adjustment on affected components if the mechanism cannot be freed"
+      ]
+    },
+    {
+      "id": "thermal_007",
+      "name": "Heater Duty Cycle Anomaly",
+      "telemetry_signature": "Heater on/off cycling frequency or duration deviates from the expected pattern for current thermal conditions - a contextual anomaly in commanded-vs-actual heater behavior.",
+      "likely_causes": [
+        "Thermostat setpoint drift",
+        "Heater element partial degradation requiring longer on-time to reach setpoint",
+        "Thermal control software logic fault"
+      ],
+      "recommended_actions": [
+        "Compare heater duty cycle trend against the temperature it's meant to control",
+        "Verify thermostat setpoint configuration hasn't drifted from intended values",
+        "Check for a software/logic fault if duty cycle behavior doesn't match the temperature trend at all"
+      ]
+    },
+    {
+      "id": "thermal_008",
+      "name": "Radiator Coating Degradation (Optical Property Shift)",
+      "telemetry_signature": "Baseline operating temperature slowly rises across many orbits with no corresponding change in internal heat generation - a slow contextual anomaly best seen in long-duration trend data.",
+      "likely_causes": [
+        "Atomic oxygen erosion of radiator surface coating (common in low Earth orbit)",
+        "UV-induced degradation of thermal control coating",
+        "Contamination deposit on the radiator surface reducing emissivity"
+      ],
+      "recommended_actions": [
+        "Trend baseline temperature over the full mission to characterize the degradation rate",
+        "Factor coating degradation into long-term thermal margin planning",
+        "Cross-check against known atomic-oxygen/UV exposure models for the orbit"
+      ]
+    },
+    {
+      "id": "thermal_009",
+      "name": "Thermal Sensor Calibration Drift",
+      "telemetry_signature": "One temperature sensor slowly diverges from a redundant or co-located sensor reading the same physical location - a slow contextual anomaly isolated to sensor data quality rather than the actual thermal environment.",
+      "likely_causes": [
+        "Sensor calibration drift over mission lifetime",
+        "Radiation-induced sensor reading error",
+        "Connector/wiring degradation affecting sensor signal integrity"
+      ],
+      "recommended_actions": [
+        "Cross-check against a redundant or nearby sensor before trusting the reading",
+        "Apply a calibration offset correction if drift is consistent and well-characterized",
+        "Flag the sensor as degraded rather than assuming a real thermal event if only one sensor shows the drift"
+      ]
+    },
+    {
+      "id": "thermal_010",
+      "name": "Cryocooler Performance Degradation",
+      "telemetry_signature": "Cooled instrument/detector temperature slowly rises despite constant cryocooler commanded power - a contextual anomaly in cooling efficiency rather than a sudden failure.",
+      "likely_causes": [
+        "Mechanical wear in the cryocooler compressor over mission lifetime",
+        "Contamination buildup reducing heat exchanger efficiency",
+        "Vibration-induced performance degradation"
+      ],
+      "recommended_actions": [
+        "Trend cooling efficiency (temperature achieved per unit power) over time",
+        "Check for a correlation with recent mechanical/vibration events",
+        "Adjust instrument duty cycle to reduce heat load if efficiency continues declining"
+      ]
+    },
+    {
+      "id": "thermal_011",
+      "name": "Thermal Cycling Fatigue Crack",
+      "telemetry_signature": "Sudden, discrete step-change in a structural or joint temperature reading - a point anomaly that may recur intermittently as the crack opens/closes with thermal expansion.",
+      "likely_causes": [
+        "Repeated thermal expansion/contraction cycling fatiguing a structural joint or thermal strap connection",
+        "Material fatigue at a mechanical interface exceeding design cycle life",
+        "Vibration-induced crack propagation"
+      ],
+      "recommended_actions": [
+        "Document the intermittent pattern; a recurring step-change is a strong fatigue-crack indicator",
+        "Avoid unnecessary additional thermal cycling of the affected area if operationally possible",
+        "Flag for structural/mechanical engineering review"
+      ]
+    },
+    {
+      "id": "thermal_012",
+      "name": "Solar Array Thermal Gradient Anomaly",
+      "telemetry_signature": "Uneven temperature distribution across solar array panels beyond what sun angle alone would predict - a contextual anomaly visible when comparing multiple array temperature sensors.",
+      "likely_causes": [
+        "Partial shadowing from a deployed structure or another spacecraft component",
+        "Localized cell/panel degradation changing thermal-optical properties",
+        "Array not fully deployed or slightly misaligned from expected orientation"
+      ],
+      "recommended_actions": [
+        "Cross-check against deployment-status and attitude telemetry for a shadowing or misalignment explanation",
+        "Compare against power output telemetry from the same panel region",
+        "Flag for review if the gradient doesn't correlate with any known geometric cause"
+      ]
+    },
+    {
+      "id": "thermal_013",
+      "name": "Propellant Line Freeze Risk",
+      "telemetry_signature": "Propellant line temperature approaches the freezing point of the propellant - a slow contextual anomaly, often following an extended eclipse or a heater fault upstream.",
+      "likely_causes": [
+        "Heater failure on the propellant line",
+        "Extended eclipse duration exceeding thermal design margin",
+        "Reduced power availability limiting heater operation"
+      ],
+      "recommended_actions": [
+        "Prioritize heater power allocation to propellant lines if power is constrained",
+        "Verify heater command/status telemetry for the affected line",
+        "Avoid commanding propulsion system use until temperature is confirmed safely above freezing"
+      ]
+    },
+    {
+      "id": "thermal_014",
+      "name": "Battery Compartment Thermal Runaway Precursor",
+      "telemetry_signature": "Rapid, accelerating temperature rise in the battery compartment distinct from normal charge/discharge heating - an early-stage point anomaly that, if uncaught, can cascade into the battery thermal runaway fault.",
+      "likely_causes": [
+        "Developing internal cell fault generating excess heat",
+        "Compartment cooling/heat-rejection path partially blocked",
+        "Charge control fault causing sustained overcharge heating"
+      ],
+      "recommended_actions": [
+        "Cross-reference with the battery-side thermal-runaway and overcharge checks immediately - this is an early warning for both",
+        "Reduce or suspend charging on the affected compartment as a precaution",
+        "Treat as time-critical; escalate faster than a typical slow-drift thermal anomaly"
+      ]
+    },
+    {
+      "id": "thermal_015",
+      "name": "Instrument Detector Temperature Excursion",
+      "telemetry_signature": "Science instrument detector temperature briefly exceeds its stability requirement without exceeding safety limits - a point anomaly affecting data quality rather than hardware safety.",
+      "likely_causes": [
+        "Brief attitude maneuver changing sun exposure to the instrument",
+        "Nearby subsystem operating in an unusually high-power mode",
+        "Cooling system transient during a mode transition"
+      ],
+      "recommended_actions": [
+        "Flag affected science data collected during the excursion window for quality review",
+        "Cross-check against attitude and power-mode telemetry for a timing correlation",
+        "Consider operational constraints to avoid recurrence during critical observations"
+      ]
+    },
+    {
+      "id": "thermal_016",
+      "name": "Eclipse Transition Thermal Shock",
+      "telemetry_signature": "Rapid temperature change rate (not just magnitude) at eclipse entry/exit exceeding the expected rate-of-change envelope - a point anomaly defined by rate rather than absolute temperature.",
+      "likely_causes": [
+        "Faster-than-nominal eclipse transition due to orbital geometry",
+        "Reduced thermal mass/insulation at the affected location increasing sensitivity to rapid change",
+        "Component operating closer to a rate-of-change design limit than expected"
+      ],
+      "recommended_actions": [
+        "Compare observed rate-of-change against component qualification limits, not just absolute temperature",
+        "Review orbital geometry for any recent change affecting eclipse transition speed",
+        "Consider pre-emptive heater adjustment ahead of predicted fast transitions"
+      ]
+    },
+    {
+      "id": "thermal_017",
+      "name": "Heat Pipe Non-Condensable Gas Accumulation",
+      "telemetry_signature": "Gradual reduction in heat pipe transport efficiency with a growing 'dead zone' temperature gradient near one end - a slow contextual anomaly visible in the temperature differential along the pipe's length.",
+      "likely_causes": [
+        "Non-condensable gas generation from internal material outgassing over mission lifetime",
+        "Working fluid degradation producing gas byproducts",
+        "Manufacturing-origin gas trapped in the pipe slowly expanding effect over time"
+      ],
+      "recommended_actions": [
+        "Trend the temperature gradient along the heat pipe length to characterize the growing dead zone",
+        "Redistribute heat load away from the affected pipe if redundancy exists",
+        "Factor reduced heat transport capacity into thermal margin planning"
+      ]
+    },
+    {
+      "id": "thermal_018",
+      "name": "Thermal Coating Contamination from Outgassing",
+      "telemetry_signature": "Slow baseline temperature drift beginning early in the mission and gradually leveling off - a contextual anomaly with a characteristic decelerating-drift shape distinct from ongoing degradation.",
+      "likely_causes": [
+        "Volatile materials outgassing from spacecraft components depositing contamination on thermal control surfaces",
+        "Contamination redistributing and settling on radiators/sensors over the early mission phase"
+      ],
+      "recommended_actions": [
+        "Compare drift timing against known outgassing timelines (typically most active early in mission)",
+        "Distinguish from ongoing degradation faults by checking whether the drift is leveling off rather than continuing to accelerate",
+        "No corrective action usually needed beyond updated thermal margin bookkeeping if the drift has stabilized"
+      ]
+    },
+    {
+      "id": "thermal_019",
+      "name": "Payload Duty-Cycle-Driven Overheating",
+      "telemetry_signature": "Temperature rise directly tracks an increase in payload/instrument operating duty cycle - a contextual anomaly explainable by a usage-pattern change rather than a hardware fault.",
+      "likely_causes": [
+        "Mission operations increased instrument duty cycle beyond original thermal design assumptions",
+        "Extended observation campaign exceeding planned thermal recovery time between operations"
+      ],
+      "recommended_actions": [
+        "Cross-check temperature rise timing directly against commanded duty-cycle changes before assuming a hardware fault",
+        "Adjust operational duty cycle or add recovery/cooldown periods between observations",
+        "Update thermal models if the new duty cycle is intended to be sustained"
+      ]
+    },
+    {
+      "id": "thermal_020",
+      "name": "Passive Radiator Blockage",
+      "telemetry_signature": "Sudden step increase in baseline temperature coincident with a deployment or attitude-change event - a point anomaly tied to a specific event that altered the radiator's view to space.",
+      "likely_causes": [
+        "A deployable structure (antenna, array, boom) now partially obstructing the radiator's view to deep space",
+        "Attitude change altering the radiator's effective heat-rejection geometry",
+        "Debris or ice buildup on the radiator surface"
+      ],
+      "recommended_actions": [
+        "Cross-check against deployment and attitude event logs for a timing correlation",
+        "Assess whether an alternate attitude profile can restore radiator view to space",
+        "If a deployable is the obstruction, evaluate whether it can be repositioned"
+      ]
+    }
+  ]
+}
