@@ -1,94 +1,135 @@
 import { useEffect, useState } from "react";
-import { getHealth, getPredictions } from "./services/api";
+
+import {
+  getHealth,
+  getPredictions,
+} from "./services/api";
+
+import Header from "./components/Header";
+import ChannelSelector from "./components/ChannelSelector";
+import PredictionOverview from "./components/PredictionOverview";
+import LiveSimulation from "./components/LiveSimulation";
 
 function App() {
+  const [channel, setChannel] = useState("C-1");
+  const [view, setView] = useState("analysis"); // "analysis" | "live"
+
   const [health, setHealth] = useState(null);
   const [prediction, setPrediction] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const loadPrediction = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [healthData, predictionData] = await Promise.all([
+        getHealth(),
+        getPredictions(channel),
+      ]);
+
+      setHealth(healthData);
+      setPrediction(predictionData.data);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.detail ||
+        err.message ||
+        "Unable to connect to PredictAI backend."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const healthData = await getHealth();
-        const predictionData = await getPredictions("C-1");
-
-        setHealth(healthData);
-        setPrediction(predictionData);
-      } catch (err) {
-        console.error(err);
-        setError(
-          err.response?.data?.detail ||
-          err.message ||
-          "Failed to connect to PredictAI backend"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
+    loadPrediction();
   }, []);
 
-  if (loading) {
-    return <h1>Connecting to PredictAI...</h1>;
-  }
-
-  if (error) {
-    return (
-      <div>
-        <h1>Backend Connection Error</h1>
-        <p>{error}</p>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <h1>PredictAI</h1>
+    <div className="app">
+      <Header healthy={health?.status === "healthy"} />
 
-      <h2>Backend</h2>
+      <main className="dashboard">
 
-      <p>
-        Status: <strong>{health?.status}</strong>
-      </p>
+        {error && (
+          <div className="error-banner">
+            <strong>BACKEND CONNECTION ERROR</strong>
+            <span>{error}</span>
+          </div>
+        )}
 
-      <h2>Random Forest Prediction</h2>
+        <section className="hero">
+          <div>
+            <span className="eyebrow">
+              SPACECRAFT MONITORING SYSTEM
+            </span>
 
-      <p>
-        Spacecraft:{" "}
-        <strong>{prediction?.data?.spacecraft}</strong>
-      </p>
+            <h2>
+              Telemetry <span>Intelligence</span>
+            </h2>
 
-      <p>
-        Channel:{" "}
-        <strong>{prediction?.data?.channel}</strong>
-      </p>
+            <p>
+              Machine-learning powered spacecraft anomaly
+              detection and health monitoring.
+            </p>
+          </div>
 
-      <p>
-        Model:{" "}
-        <strong>{prediction?.data?.model}</strong>
-      </p>
+          {prediction && view === "analysis" && (
+            <div className="mission-chip">
+              <span>ACTIVE CHANNEL</span>
+              <strong>{prediction.channel}</strong>
+            </div>
+          )}
+        </section>
 
-      <p>
-        Total Windows:{" "}
-        <strong>{prediction?.data?.total_windows}</strong>
-      </p>
+        <div className="view-tabs">
+          <button
+            className={`view-tab ${view === "analysis" ? "active" : ""}`}
+            onClick={() => setView("analysis")}
+          >
+            Single Channel Analysis
+          </button>
+          <button
+            className={`view-tab ${view === "live" ? "active" : ""}`}
+            onClick={() => setView("live")}
+          >
+            Live Simulation
+          </button>
+        </div>
 
-      <p>
-        Anomalous Windows:{" "}
-        <strong>{prediction?.data?.anomalous_windows}</strong>
-      </p>
+        {view === "analysis" ? (
+          <>
+            <ChannelSelector
+              channel={channel}
+              setChannel={setChannel}
+              onRun={loadPrediction}
+              loading={loading}
+            />
 
-      <p>
-        Normal Windows:{" "}
-        <strong>{prediction?.data?.normal_windows}</strong>
-      </p>
+            {loading && !prediction ? (
+              <div className="loading-panel">
+                <div className="loader" />
+                <p>Loading spacecraft telemetry intelligence...</p>
+              </div>
+            ) : (
+              <PredictionOverview prediction={prediction} />
+            )}
+          </>
+        ) : (
+          <LiveSimulation />
+        )}
 
-      <p>
-        Anomaly Rate:{" "}
-        <strong>{prediction?.data?.anomaly_rate}%</strong>
-      </p>
+      </main>
+
+      <footer>
+        <span>PREDICTAI</span>
+        <span>SPACECRAFT TELEMETRY INTELLIGENCE</span>
+        <span>v1.0</span>
+      </footer>
     </div>
   );
 }

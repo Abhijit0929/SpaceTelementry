@@ -27,4 +27,9 @@ export const getDiagnosis = async (channel) => {
   return response.data;
 };
 
+export const getChannels = async () => {
+  const response = await API.get("/channels");
+  return response.data;
+};
+
 export default API;
