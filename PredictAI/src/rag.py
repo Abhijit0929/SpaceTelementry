@@ -194,26 +194,41 @@ def describe_episode(episode: Dict) -> str:
 
     IMPORTANT: only uses words that actually occur in the knowledge base
     text (telemetry_signature / likely_causes) - a query word the TF-IDF
-    vectorizer never saw during fit() is silently ignored, so padding the
-    query with vocabulary the knowledge base doesn't use (e.g. "severity",
-    "windows") does nothing except dilute the words that DO matter. Key
-    classification words are repeated to boost their TF-IDF weight against
-    a small (16-entry) knowledge base corpus.
+    vectorizer never saw during fit() is silently ignored. A word count
+    check against the current knowledge base confirmed which duration/
+    severity vocabulary genuinely exists (e.g. "sustained", "extended",
+    "brief", "prolonged", "total", "partial" all appear multiple times;
+    "severe"/"moderate"/"mild"/"elevated" do NOT appear at all and were
+    deliberately left out - they would be silently ignored anyway).
+
+    Uses graded DURATION BANDS instead of a single point/contextual cutoff,
+    since duration is what varies most between real detected episodes
+    (a 114-timestep anomaly and a 1068-timestep anomaly should NOT produce
+    the same query).
     """
-    is_point = episode["real_duration_estimate"] <= SHORT_DURATION_TIMESTEPS
+    real_duration = episode["real_duration_estimate"]
 
-    if is_point:
-        # matches wording used across point-anomaly entries: "sudden", "sharp",
-        # "step-change", "point anomaly", "spike"
-        type_terms = "point anomaly sudden sharp step-change spike " * 3
+    if real_duration <= 50:
+        duration_terms = "point anomaly brief short isolated single spike step-change " * 3
+    elif real_duration <= 200:
+        duration_terms = "intermittent recurring short anomaly " * 3
+    elif real_duration <= 500:
+        duration_terms = "contextual anomaly extended long drift " * 3
+    elif real_duration <= 1000:
+        duration_terms = "contextual anomaly sustained extended long drift " * 3
     else:
-        # matches wording used across contextual-anomaly entries: "gradual",
-        # "sustained", "drift", "contextual anomaly"
-        type_terms = "contextual anomaly gradual sustained drift " * 3
+        duration_terms = "contextual anomaly prolonged sustained total complete drift " * 3
 
-    onset_terms = "sudden sharp abrupt " * 2 if episode["onset_jump"] > 0.3 else "gradual sustained drift " * 2
+    if episode["avg_severity"] >= 0.85:
+        severity_terms = "total complete critical " * 2
+    elif episode["avg_severity"] >= 0.5:
+        severity_terms = "partial " * 2
+    else:
+        severity_terms = ""
 
-    return f"{type_terms} {onset_terms}".strip()
+    onset_terms = "rapid sudden sharp " * 2 if episode["onset_jump"] > 0.3 else "slow gradual sustained " * 2
+
+    return f"{duration_terms} {severity_terms} {onset_terms}".strip()
 
 
 # ---------------------------------------------------------------------------

@@ -32,4 +32,16 @@ export const getChannels = async () => {
   return response.data;
 };
 
+export const getHealthOverview = async (limit = null) => {
+  const response = await API.get("/health/overview", {
+    params: limit ? { limit } : {},
+  });
+  return response.data;
+};
+
+export const getChannelHealth = async (channel) => {
+  const response = await API.get(`/health/${channel}`);
+  return response.data;
+};
+
 export default API;

@@ -9,6 +9,7 @@ import Header from "./components/Header";
 import ChannelSelector from "./components/ChannelSelector";
 import PredictionOverview from "./components/PredictionOverview";
 import LiveSimulation from "./components/LiveSimulation";
+import HealthOverview from "./components/HealthOverview";
 
 function App() {
   const [channel, setChannel] = useState("C-1");
@@ -85,6 +86,8 @@ function App() {
             </div>
           )}
         </section>
+
+        <HealthOverview />
 
         <div className="view-tabs">
           <button

@@ -1,33 +1,52 @@
+import { useEffect, useState } from "react";
+import { getChannels } from "../services/api";
+
 function ChannelSelector({
   channel,
   setChannel,
   onRun,
   loading,
 }) {
+  const [channels, setChannels] = useState([]);
+  const [loadingChannels, setLoadingChannels] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    getChannels()
+      .then((data) => setChannels(data.channels))
+      .catch((err) => setError(err.message || "Failed to load channel list."))
+      .finally(() => setLoadingChannels(false));
+  }, []);
+
   return (
     <div className="control-panel">
       <div>
-        <span className="control-label">TELEMETRY CHANNEL</span>
+        <span className="control-label">
+          {loadingChannels ? "LOADING CHANNELS..." : "TELEMETRY CHANNEL"}
+        </span>
 
         <select
           value={channel}
           onChange={(e) => setChannel(e.target.value)}
+          disabled={loadingChannels}
         >
-          <option value="A-1">A-1</option>
-          <option value="A-2">A-2</option>
-          <option value="A-3">A-3</option>
-          <option value="A-4">A-4</option>
-          <option value="A-5">A-5</option>
+          {channels.map((c) => (
+            <option key={c.channel} value={c.channel}>
+              {c.channel} ({c.spacecraft})
+            </option>
+          ))}
         </select>
       </div>
 
       <button
         className="run-button"
         onClick={onRun}
-        disabled={loading}
+        disabled={loading || loadingChannels}
       >
         {loading ? "ANALYZING..." : "RUN ANALYSIS"}
       </button>
+
+      {error && <span className="inline-error">{error}</span>}
     </div>
   );
 }
